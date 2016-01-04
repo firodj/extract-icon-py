@@ -16,3 +16,7 @@ Testing
 ```
 $ py.test
 ```
+
+References
+----------
+(CodeProject - Get icons from Exe or DLL the PE way)[http://www.codeproject.com/Articles/9303/Get-icons-from-Exe-or-DLL-the-PE-way]
