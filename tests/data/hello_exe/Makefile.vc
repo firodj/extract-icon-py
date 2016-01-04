@@ -1,0 +1,10 @@
+all: install
+
+install: hello.exe
+	move hello.exe ..
+
+hello.res: hello.rc
+	rc hello.rc 
+
+hello.exe: hello.res hello.c
+	cl /Fehello.exe /EHsc hello.c user32.lib hello.res
