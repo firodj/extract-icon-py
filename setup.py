@@ -16,26 +16,26 @@ class PyTest(TestCommand):
 
 	def run_tests(self):
 		#import here, cause outside the eggs aren't loaded
-		import pytest		
+		import pytest
 		errno = pytest.main(self.pytest_args)
 		sys.exit(errno)
-		
+
 setup(
 	name = "extract_icon",
-	version = "0.0.1",
+	version = "0.1.0",
 	author = "Fadhil Mandaga",
 	author_email = "firodj@gmail.com",
-	description = ("Extract Icon from PE Executable File"),    
+	description = ("Extract Icon from PE Executable File"),
 	keywords = "extract icon executable",
 	url="https://www.python.org/",
 	packages=['extract_icon'],
-	install_requires=readfile('requirements.txt'),	
+	install_requires=readfile('requirements.txt'),
 	tests_require=['pytest'],
 	cmdclass={'test': PyTest},
 	classifiers=[
 		"Development Status :: 3 - Alpha",
 		"Environment :: Console",
 		"Operating System :: OS Independent",
-		"Topic :: Utilities",        
+		"Topic :: Utilities",
 	],
 )
