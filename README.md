@@ -13,6 +13,14 @@ $ pip install -r requirements.txt
 Testing
 -------
 
+Install pytest first:
+
+```
+pip install -U pytest
+```
+
+Then run tests:
+
 ```
 $ py.test
 ```
