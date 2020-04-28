@@ -1,6 +1,7 @@
 import struct
 import pefile
-from StringIO import StringIO
+from io import BytesIO
+from builtins import range
 from PIL import Image
 
 class ExtractIcon(object):
@@ -16,19 +17,19 @@ class ExtractIcon(object):
 		self.pe = pefile.PE(filepath)
 
 	def find_resource_base(self, type):
-		rt_base_idx = [entry.id for 	
+		rt_base_idx = [entry.id for
 			entry in self.pe.DIRECTORY_ENTRY_RESOURCE.entries].index(
 				pefile.RESOURCE_TYPE[type]
-		)		
+		)
 
 		if rt_base_idx is not None:
 			return self.pe.DIRECTORY_ENTRY_RESOURCE.entries[rt_base_idx]
-		
+
 		return None
 
 	def find_resource(self, type, res_index):
 		rt_base_dir = self.find_resource_base(type)
-		
+
 		if res_index < 0:
 			try:
 				idx = [entry.id for entry in rt_base_dir.directory.entries].index(-res_index)
@@ -42,7 +43,7 @@ class ExtractIcon(object):
 		test_res_dir = rt_base_dir.directory.entries[idx]
 		res_dir = test_res_dir
 		if test_res_dir.struct.DataIsDirectory:
-			# another Directory 
+			# another Directory
 			# probably language take the first one
 			res_dir = test_res_dir.directory.entries[0]
 		if res_dir.struct.DataIsDirectory:
@@ -54,12 +55,12 @@ class ExtractIcon(object):
 	def get_group_icons(self):
 		rt_base_dir = self.find_resource_base('RT_GROUP_ICON')
 		groups = list()
-		for res_index in xrange(0, len(rt_base_dir.directory.entries)):
+		for res_index in range(0, len(rt_base_dir.directory.entries)):
 			grp_icon_dir_entry = self.find_resource('RT_GROUP_ICON', res_index)
 
 			if not grp_icon_dir_entry:
 				continue
-		
+
 			data_rva = grp_icon_dir_entry.data.struct.OffsetToData
 			size = grp_icon_dir_entry.data.struct.Size
 			data = self.pe.get_memory_mapped_image()[data_rva:data_rva+size]
@@ -71,14 +72,14 @@ class ExtractIcon(object):
 			if grp_icon_dir.Reserved != 0 or grp_icon_dir.Type != self.RES_ICON:
 				continue
 			offset = grp_icon_dir.sizeof()
-	
+
 			entries = list()
-			for idx in xrange(0, grp_icon_dir.Count):
+			for idx in range(0, grp_icon_dir.Count):
 				grp_icon = pefile.Structure(self.GRPICONDIRENTRY_format, file_offset=file_offset+offset)
 				grp_icon.__unpack__(data[offset:])
 				offset += grp_icon.sizeof()
 				entries.append(grp_icon)
-				
+
 			groups.append(entries)
 		return groups
 
@@ -86,7 +87,7 @@ class ExtractIcon(object):
 		b = 0
 		w = 0
 		best = None
-		for i in xrange(len(entries)):
+		for i in range(len(entries)):
 			icon = entries[i]
 			if icon.BitCount > b:
 				b = icon.BitCount
@@ -104,8 +105,8 @@ class ExtractIcon(object):
 
 		data_rva = icon_entry.data.struct.OffsetToData
 		size = icon_entry.data.struct.Size
-		data = self.pe.get_memory_mapped_image()[data_rva:data_rva+size]		
-		
+		data = self.pe.get_memory_mapped_image()[data_rva:data_rva+size]
+
 		return data
 
 	def export_raw(self, entries, index = None):
@@ -120,7 +121,7 @@ class ExtractIcon(object):
 			if data_offset is None:
 				data_offset = len(ico) + ((grp_icon.sizeof()+2) * len(entries))
 
-			nfo = grp_icon.__pack__()[:-2] + struct.pack('<L', data_offset)			
+			nfo = grp_icon.__pack__()[:-2] + struct.pack('<L', data_offset)
 			info.append( nfo )
 
 			raw_data = self.get_icon(grp_icon.ID)
@@ -129,17 +130,17 @@ class ExtractIcon(object):
 			data.append( raw_data )
 			data_offset += len(raw_data)
 
-		raw = ico + r''.join(info) + r''.join(data)
+		raw = ico + b''.join(info + data)
 		return raw
 
 	def export(self, entries, index = None):
 		raw = self.export_raw(entries, index)
-		return Image.open(StringIO(raw))
+		return Image.open(BytesIO(raw))
 
 	def _get_bmp_header(self, data):
-		if data[0:4] == '\x89PNG':
-			header = ''
+		if data[0:4] == b'\x89PNG':
+			header = b''
 		else:
-			dib_size = struct.unpack('<L', data[0:4])[0]			
-			header = 'BM' + struct.pack('<LLL', len(data) + 14, 0, 14 + dib_size)
+			dib_size = struct.unpack('<L', data[0:4])[0]
+			header = b'BM' + struct.pack('<LLL', len(data) + 14, 0, 14 + dib_size)
 		return header
