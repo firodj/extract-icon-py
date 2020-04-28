@@ -2,3 +2,4 @@
 *.pyd
 .cache
 build/
+.vscode
