@@ -1,2 +1,2 @@
 pefile
-pillow==6.2.2
+pillow==8.3.2
