@@ -3,6 +3,13 @@ extract-icon-py
 
 Extract Icon from PE Executable with Python.
 
+Alternatives
+------------
+
+I don't have time to manage this repo, so if you want newer support, consider using:
+
+* [icoextract](https://github.com/jlu5/icoextract)
+
 Requirements
 ------------
 
