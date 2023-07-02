@@ -16,3 +16,23 @@ def test_extracticon():
 
 	b = ImageChops.difference(im1, im2).getbbox()
 	assert b is None
+
+def test_extractshelldll():
+	filepath = "tests/data/SHELL32-4.72.3812.600.DLL"
+	extractor = ExtractIcon(filepath)
+	groups = extractor.get_group_icons()
+	for entry in extractor.pe.DIRECTORY_ENTRY_RESOURCE.entries:
+		res_name = pefile.RESOURCE_TYPE[entry.id] if entry.id is not None else None
+		print(str(entry.name), res_name, len(entry.directory.entries))
+	assert False
+	for g in range(0, len(groups)):
+		entries = groups[g]
+		#print(g, len(entries))
+		best = extractor.best_icon(entries)
+		for e in range(0, len(entries)):
+			#print(g, best, e)
+			im = extractor.export(entries, e)
+			#im = extractor.export(entries, best)
+			#assert im is not None
+			#break
+			

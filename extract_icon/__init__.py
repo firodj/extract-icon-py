@@ -17,6 +17,7 @@ class ExtractIcon(object):
 		self.pe = pefile.PE(filepath)
 
 	def find_resource_base(self, type):
+		# FIXME:
 		rt_base_idx = [entry.id for
 			entry in self.pe.DIRECTORY_ENTRY_RESOURCE.entries].index(
 				pefile.RESOURCE_TYPE[type]
@@ -111,7 +112,7 @@ class ExtractIcon(object):
 
 	def export_raw(self, entries, index = None):
 		if index is not None:
-			entries = entries[index:index+1]
+			entries = [entries[index]]
 
 		ico = struct.pack('<HHH', 0, self.RES_ICON, len(entries))
 		data_offset = None
@@ -135,7 +136,11 @@ class ExtractIcon(object):
 
 	def export(self, entries, index = None):
 		raw = self.export_raw(entries, index)
-		return Image.open(BytesIO(raw))
+		try:
+			im = Image.open(BytesIO(raw))
+		except Exception as e:
+			print(e, raw)
+			raise e
 
 	def _get_bmp_header(self, data):
 		if data[0:4] == b'\x89PNG':
